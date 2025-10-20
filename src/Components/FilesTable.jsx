@@ -6,7 +6,7 @@ import FilterByName from "./FilterByName";
 export default function FilesTable() {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState({hasError: false, message: ""});
+    const [error, setError] = useState({hasError: false, message: "", status: null});
     const [filter, setFilter] = useState("");
 
   useEffect(() => {
@@ -18,12 +18,13 @@ export default function FilesTable() {
     try {
       const data = await getFilesData(fileName);
       setFiles(data);
-      setError({ hasError: false, message: "" });
+      setError({ hasError: false, message: "", status: null });
     } catch (err) {
       console.error(err);
       setError({
         hasError: true,
-        message: err.message || "Error fetching files data",
+        message: err.response?.data.message || "Error fetching files data",
+        status: err.response?.status || null,
       });
       setFiles([]);
     } finally {
@@ -70,7 +71,7 @@ export default function FilesTable() {
          </div>
         }
         {!loading && error.hasError && (
-          <div className="text-center my-5 text-danger">Error: {error.message}</div>
+          <div className="text-center my-5 text-danger">{error.message}</div>
         )}
         {!loading && !error.hasError && (
           <>
