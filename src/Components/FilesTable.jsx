@@ -1,6 +1,7 @@
 import {useState, useEffect} from "react";
 import { Table, Spinner} from "react-bootstrap";
 import { getFilesData } from "../api/filesClient";
+import FilterByName from "./FilterByName";
 
 export default function FilesTable() {
     const [files, setFiles] = useState([]);
@@ -8,22 +9,37 @@ export default function FilesTable() {
     const [error, setError] = useState({hasError: false, message: ""});
     const [filter, setFilter] = useState("");
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const data = await getFilesData();
-                setFiles(data);
-            } catch (err) {
-                console.error(err);
-                setError({hasError: true, message: err.message || "Error fetching files data"});
-                setFiles([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async (fileName = "") => {
+    setLoading(true);
+    try {
+      const data = await getFilesData(fileName);
+      setFiles(data);
+      setError({ hasError: false, message: "" });
+    } catch (err) {
+      console.error(err);
+      setError({
+        hasError: true,
+        message: err.message || "Error fetching files data",
+      });
+      setFiles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilter = () => {
+    fetchData(filter.trim());
+  };
+
+  const handleClear = () => {
+    setFilter("");
+    fetchData();
+  };
+
 
     const renderRows = () => {
       return files.map((file) =>
@@ -41,6 +57,13 @@ export default function FilesTable() {
 
     return (
       <div className="my-4 mx-5">
+        <FilterByName 
+          filter={filter}
+          setFilter={setFilter}
+          handleFilter={handleFilter}
+          handleClear={handleClear}
+        />
+
         {loading &&
          <div className="text-center my-5">
             <Spinner animation="border" role="status" />
@@ -51,15 +74,6 @@ export default function FilesTable() {
         )}
         {!loading && !error.hasError && (
           <>
-            <div className="mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Filter by file name"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              />
-            </div>
             <Table striped bordered hover align="middle">
               <thead className="table-light">
                 <tr>
