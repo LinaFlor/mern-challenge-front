@@ -16,10 +16,11 @@ export async function getFilesData(fileName) {
         let url = '/files/data';
 
         if (fileName) {
-            url = `/files/data?file=${fileName}`;
+            url = `/files/data?fileName=${fileName}`;
         }
 
         const resp = await api.get(url);
+
         return resp.data;
     } catch (error) {
         console.error("Error fetching files data:", error);
